@@ -1,9 +1,9 @@
 import processing.core.*;
 
 public class Mappable {
-	Cell parent;
+	SuperCell parent;
 	LawnmowerGame canvas;
-	public Mappable(Cell parent, LawnmowerGame canvas) {
+	public Mappable(SuperCell parent, LawnmowerGame canvas) {
 		this.parent = parent;
 		this.canvas = canvas;
 	}

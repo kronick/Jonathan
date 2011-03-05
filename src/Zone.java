@@ -4,7 +4,7 @@ import java.util.*;
 public class Zone {
 
 	int resolution;
-	Cell[][] cells;
+	SuperCell[][] cells;
 	Grid parent;
 	LawnmowerGame canvas;
 	Zone[] neighbors;
@@ -30,12 +30,12 @@ public class Zone {
 		this.parent = parent;
 		this.resolution = resolution;
 		this.center = center;
-		cells = new Cell[resolution][resolution];
+		cells = new SuperCell[resolution][resolution];
 
 		// Populate the cells
 		for(int i=0; i<cells.length; i++) {
 			for(int j=0; j<cells[i].length; j++) {
-				cells[i][j] = new Cell(canvas, this);
+				cells[i][j] = new SuperCell(canvas, this);
 			}
 		}
 
@@ -47,7 +47,7 @@ public class Zone {
 
 	void update() {
 		drawnThisFrame = false;
-		if(!updatedThisFrame) {
+		if(!updatedThisFrame && parent.zoneIsVisible(this)) {
 			//canvas.println("Updated zone.");
 			for(int i=0; i<cells.length; i++) {
 				for(int j=0; j<cells[i].length; j++) {
@@ -135,11 +135,11 @@ public class Zone {
 		updatedThisFrame = false;
 	}
 
-	Cell getAdjacent(Cell c, int dir) {
+	SuperCell getAdjacent(SuperCell c, int dir) {
 		GridCoordinate coord = getCoordinate(c);
 		if(coord != null) {
 			switch(dir) {
-				case Cell.ADJACENT_TOP:
+				case SuperCell.ADJACENT_TOP:
 					if(coord.y > 0) {
 						return cells[coord.x][coord.y-1];
 					}
@@ -150,7 +150,7 @@ public class Zone {
 						}
 						else return null;
 					}
-				case Cell.ADJACENT_BOTTOM:
+				case SuperCell.ADJACENT_BOTTOM:
 					if(coord.y < resolution-1) {
 						return cells[coord.x][coord.y+1];
 					}
@@ -161,7 +161,7 @@ public class Zone {
 						}
 						else return null;
 					}
-				case Cell.ADJACENT_TOP_LEFT:
+				case SuperCell.ADJACENT_TOP_LEFT:
 					if(coord.x > 0) {
 						return cells[coord.x-1][coord.y];
 					}
@@ -172,7 +172,7 @@ public class Zone {
 						}
 						else return null;
 					}
-				case Cell.ADJACENT_TOP_RIGHT:
+				case SuperCell.ADJACENT_TOP_RIGHT:
 					if(coord.y > 0 && coord.x < resolution-1) {
 						return cells[coord.x+1][coord.y-1];
 					}
@@ -201,7 +201,7 @@ public class Zone {
 						}
 
 					}
-				case Cell.ADJACENT_BOTTOM_LEFT:
+				case SuperCell.ADJACENT_BOTTOM_LEFT:
 					if(coord.x > 0 && coord.y < resolution-1) {
 						return cells[coord.x-1][coord.y+1];
 					}
@@ -227,7 +227,7 @@ public class Zone {
 							else return null;
 						}
 					}
-				case Cell.ADJACENT_BOTTOM_RIGHT:
+				case SuperCell.ADJACENT_BOTTOM_RIGHT:
 					if(coord.x < resolution-1) {
 						return cells[coord.x+1][coord.y];
 					}
@@ -245,8 +245,8 @@ public class Zone {
 		else return null;
 	}
 
-	GridCoordinate getCoordinate(Cell c) {
-		Cell foundCell;
+	GridCoordinate getCoordinate(SuperCell c) {
+		SuperCell foundCell;
 		for(int i=0; i<cells.length; i++) {
 			for(int j=0; j<cells[i].length; j++) {
 				if(cells[i][j] == c) return new GridCoordinate(i,j);
@@ -255,7 +255,7 @@ public class Zone {
 		return null;
 	}
 
-	PVector getCellPosition(Cell c) {
+	PVector getCellPosition(SuperCell c) {
 		GridCoordinate coord = getCoordinate(c);
 		PVector out = new PVector(parent.scale * 1.5f * coord.x, parent.scale * (float)Math.sqrt(3) * 0.5f * (coord.x + 2 * coord.y));
 		out.add(this.center);

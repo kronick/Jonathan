@@ -1,11 +1,11 @@
 import processing.core.PApplet;
 
 
-public class House extends Mappable{
+public class House extends Layerable {
 	Sprite sprite;
 	RoadSegment serviceRoad;
 	int drivewayDirection;
-	public House(Cell parent, LawnmowerGame canvas, RoadSegment serviceRoad, int drivewayDirection) {
+	public House(SuperCell parent, LawnmowerGame canvas, RoadSegment serviceRoad, int drivewayDirection) {
 		super(parent, canvas);
 		this.serviceRoad = serviceRoad;
 		this.drivewayDirection = drivewayDirection;

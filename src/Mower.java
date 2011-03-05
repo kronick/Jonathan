@@ -1,17 +1,20 @@
 import processing.core.*;
+import javax.media.opengl.*;
 
 public class Mower {
 	public PVector position;
 	public float speed, angle;
 	public int direction, nextDirection;
 	LawnmowerGame canvas;
-	Cell closestCell;
+	SubCell closestCell;
 	private Sprite mowerSprite;
 	private Sprite bladeSprite;
 	private Sprite manSprite;
 	PVector manPosition;
 	private float scale = 10;
 	private boolean mowing = true;
+
+	private int cellEntryDir;
 
 	public Mower(LawnmowerGame canvas) {
 		this.canvas = canvas;
@@ -24,15 +27,19 @@ public class Mower {
 		this.mowerSprite = new Sprite(canvas, "mower-body.png", new PVector(0,19));
 		this.bladeSprite = new Sprite(canvas, "mower-blade.png", new PVector(0,19));
 		this.manSprite = new Sprite(canvas, "mower-man.png", new PVector(0,0));
+
+		this.cellEntryDir = 0;
 	}
 
 	public void update() {
 		//canvas.println(getDistanceFromCellCenter() + " < " + (closestCell.diameter()/2));
 		//canvas.println(this.closestCell.getPosition());
 		if(getDistanceFromCellCenter() > closestCell.diameter() * 0.5) {
+			canvas.println("Transitioning");
 			transitionToNextCell();
 		}
 		if(isAlignedWithGrid() && nextDirection != this.direction) {
+			canvas.println("rotating to next direction");
 			snapToGrid();
 			this.direction = this.nextDirection;
 		}
@@ -40,12 +47,13 @@ public class Mower {
 		float angleError = getAngleError();
 		this.angle += angleError * 0.1f;
 		if(this.speed != 0) {
-			if(Math.abs(angleError) < 0.05f) {
+			if(Math.abs(angleError) < 0.3f) {
 				PVector dP = new PVector(-(float)Math.sin(targetAngle)*speed, (float)Math.cos(targetAngle)*speed);
 				this.position.add(dP);
 			}
 		}
 		else {
+			//canvas.println("Self-aligning");
 			PVector offset = PVector.sub(this.position, this.closestCell.getPosition());
 			offset.mult(0.1f);
 			this.position.sub(offset);
@@ -58,7 +66,7 @@ public class Mower {
 	}
 
 	public boolean turnLeft() {
-		if(Math.abs(getAngleError()) < 0.2f) {
+		if(Math.abs(getAngleError()) < 0.5f) {
 			canvas.println("TURNING LEFT");
 			changeDirection(this.direction - 1);
 			return true;
@@ -66,7 +74,7 @@ public class Mower {
 		else return false;
 	}
 	public boolean turnRight() {
-		if(Math.abs(getAngleError()) < 0.2f) {
+		if(Math.abs(getAngleError()) < 0.5f) {
 			canvas.println("TURNING RIGHT");
 			changeDirection(this.direction + 1);
 			return true;
@@ -91,11 +99,11 @@ public class Mower {
 
 		canvas.pushMatrix();
 			canvas.translate(-this.position.x, -this.position.y);
-			canvas.scale(0.5f);
+			canvas.scale(0.05f);
 			canvas.rotate(this.angle);
 			this.mowerSprite.draw(scale);
 			canvas.pushMatrix();
-				canvas.rotate(canvas.frameCount/3f);
+				if(mowing) canvas.rotate(canvas.frameCount/3f);
 				this.bladeSprite.draw(scale);
 			canvas.popMatrix();
 
@@ -106,18 +114,20 @@ public class Mower {
 
 			canvas.noStroke();
 			canvas.fill(0);
-			canvas.beginShape();
-				canvas.vertex(manPosition.x-5, 12-manPosition.y);
-				canvas.vertex(manPosition.x-3.5f, 12-manPosition.y);
-				canvas.vertex(-3,5);
-				canvas.vertex(-4,5);
-			canvas.endShape(canvas.CLOSE);
-			canvas.beginShape();
-				canvas.vertex(manPosition.x+5, 12-manPosition.y);
-				canvas.vertex(manPosition.x+3.5f, 12-manPosition.y);
-				canvas.vertex(3,5);
-				canvas.vertex(4,5);
-			canvas.endShape(canvas.CLOSE);
+			canvas.gl.glColor3f(0,0,0);
+			canvas.gl.glBegin(GL.GL_QUADS);
+				canvas.gl.glVertex2f(manPosition.x-5, 12-manPosition.y);
+				canvas.gl.glVertex2f(manPosition.x-3.5f, 12-manPosition.y);
+				canvas.gl.glVertex2f(-3,5);
+				canvas.gl.glVertex2f(-4,5);
+			//canvas.endShape(canvas.CLOSE);
+			//canvas.beginShape();
+				canvas.gl.glVertex2f(manPosition.x+5, 12-manPosition.y);
+				canvas.gl.glVertex2f(manPosition.x+3.5f, 12-manPosition.y);
+				canvas.gl.glVertex2f(3,5);
+				canvas.gl.glVertex2f(4,5);
+			//canvas.endShape(canvas.CLOSE);
+				canvas.gl.glEnd();
 		canvas.popMatrix();
 	}
 
@@ -135,7 +145,16 @@ public class Mower {
 		if(this.closestCell == null)
 			canvas.println("Current closest cell is null... wtf?");
 		if(this.closestCell.getAdjacent(dir) != null) {
+			// The actual transition happens here if finding the next cell was successful
+			this.closestCell.currentCell = false;
+			if(mowing)
+				this.closestCell.updatePath(cellEntryDir, dir);
+			this.cellEntryDir = (dir+3)%6;
+
 			this.closestCell = this.closestCell.getAdjacent(dir);
+			this.closestCell.currentCell = true;
+			if(mowing)
+				this.closestCell.pushPath(cellEntryDir, cellEntryDir);
 			canvas.println("moving to next cell");
 		}
 		else {
@@ -145,10 +164,23 @@ public class Mower {
 	}
 
 	public boolean isAlignedWithGrid() {
-		return getDistanceFromCellCenter() < 1f;
+		return getDistanceFromCellCenter() < .1f;
 	}
 
 	void snapToGrid() {
 		this.position = this.closestCell.getPosition();
+	}
+
+	void toggleMowing() {
+		if(!mowing) {
+			this.cellEntryDir = this.direction;
+			this.closestCell.pushPath(this.direction, this.direction);
+			this.mowing = true;
+		}
+		else {
+			this.mowing = false;
+			this.closestCell.updatePath(cellEntryDir, cellEntryDir);
+		}
+
 	}
 }

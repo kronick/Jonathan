@@ -11,11 +11,11 @@ public class Grid {
 	float zoom;
 	LawnmowerGame canvas;
 
-	int zoneSize = 8;
+	int zoneSize = 5;
 	ArrayList<Zone> zones;
 	Zone centerZone;
 
-	ArrayList<Cell> cells;
+	ArrayList<SuperCell> cells;
 
 	private float[] clipLines;
 	static final int CLIP_LEFT = 0;
@@ -29,7 +29,7 @@ public class Grid {
 		this.scale = scale;
 		this.canvas = canvas;
 		this.zones = new ArrayList<Zone>();
-		this.zoom = 1f;
+		this.zoom = 10f;
 
 		zones.add(new Zone(canvas, this, zoneSize));
 		zones.add(new Zone(canvas, this, zoneSize));
@@ -175,7 +175,7 @@ public class Grid {
   	}
 
   	void setZoom(float level) {
-  		if(level > 0.1 && level < 20)
+  		if(level > 8 && level < 60)
   			zoom = level;
   	}
 }

@@ -1,6 +1,6 @@
 import processing.core.PApplet;
 
-public class RoadSegment extends Mappable{
+public class RoadSegment extends Layerable {
 	RoadSegment[] connections;
 	boolean grow;
 	int age;
@@ -9,46 +9,62 @@ public class RoadSegment extends Mappable{
 	private int lastConnection;
 
 	static final float BRANCH_CHANCE = 0.01f;
-	public RoadSegment(Cell parent, LawnmowerGame canvas) {
+	public RoadSegment(SuperCell parent, LawnmowerGame canvas) {
 		super(parent, canvas);
-		connections = new RoadSegment[6];
-		grow = true;
-		age = 0;
-		shape = null;
-		lastConnection = 0;
+		this.superLayer = canvas.ROAD_LAYER;
+		this.connections = new RoadSegment[6];
+		this.grow = true;
+		this.age = 0;
+		this.shape = null;
+		this.lastConnection = 0;
 	}
 
 	public void update() {
+		super.update();
 		if(grow && (numberOfConnections() < 2 || (numberOfConnections() < 3 && canvas.random(1) < BRANCH_CHANCE))) {
 			// choose a random direction,
 			int dir = this.lastConnection + (int)canvas.random(-2,2);
 			if(dir < 0) dir += 6;
 			if(connections[dir%6] == null) {
-				Cell adjacentCell = parent.getAdjacent(dir);
+				SuperCell adjacentCell = (SuperCell)parent.getAdjacent(dir);
 				if(adjacentCell != null && adjacentCell.isPavable((dir+3)%6)) { // If the chosen direction exists as a cell and does not already contain a road segment
 					RoadSegment newSegment = new RoadSegment(adjacentCell, canvas);
 					this.makeConnection(dir, newSegment);
 					newSegment.makeConnection(dir+3, this);
-					adjacentCell.addContent(newSegment);
+					//adjacentCell.addContent(newSegment);
+				}
+				else if(adjacentCell != null && adjacentCell.getAdjacent(dir) != null && !adjacentCell.hasRoad() &&
+						adjacentCell.getAdjacent(dir).hasRoad() &&
+						adjacentCell.getAdjacent(dir).getRoad().numberOfConnections() < 3 &&
+						canvas.random(0.5f) < BRANCH_CHANCE) {	// Close a loop
+					RoadSegment newSegment = new RoadSegment(adjacentCell, canvas);
+					this.makeConnection(dir, newSegment);
+					newSegment.makeConnection(dir+3, this);
+					//adjacentCell.addContent(newSegment);
+					RoadSegment existingSegment = adjacentCell.getAdjacent(dir).getRoad();
+					newSegment.makeConnection(dir, existingSegment);
+					existingSegment.makeConnection(dir+3, newSegment);
 				}
 			}
 
 			if(canvas.random(1) < 0.3) {
 				int i = (int)canvas.random(0,6);
-				if(parent.getAdjacent(i) != null && parent.getAdjacent(i).isDevelopable()) {
-					House newHouse = new House(parent.getAdjacent(i), canvas, this, (i+3)%6);
-					parent.getAdjacent(i).addContent(newHouse);
+				if(parent.getAdjacent(i) != null && ((SuperCell)parent.getAdjacent(i)).isDevelopable()) {
+					//House newHouse = new House(parent.getAdjacent(i), canvas, this, (i+3)%6);
+					//parent.getAdjacent(i).addContent(newHouse);
 				}
 			}
+
+			canvas.liveRoads++;
 		}
 		if(age > 50 && grow) {
 			grow = false;
 			if(numberOfConnections() == 1 && false) {
 				// Plant a subdivision around the cul de sac
 				for(int i=0; i<6; i++) {
-					if(parent.getAdjacent(i) != null && parent.getAdjacent(i).isDevelopable()) {
-						House newHouse = new House(parent.getAdjacent(i), canvas, this, (i+3)%6);
-						parent.getAdjacent(i).addContent(newHouse);
+					if(parent.getAdjacent(i) != null && ((SuperCell)parent.getAdjacent(i)).isDevelopable()) {
+						House newHouse = new House(((SuperCell)parent.getAdjacent(i)), canvas, this, (i+3)%6);
+						//parent.getAdjacent(i).addContent(newHouse);
 					}
 				}
 			}
@@ -57,27 +73,14 @@ public class RoadSegment extends Mappable{
 	}
 
 	public void draw() {
-		canvas.pushStyle();
-		canvas.fill(0,0,grow ? 255 : 0);
-		canvas.stroke(0,0,0);
 
-		if(this.shape == null) {
-			if(numberOfConnections() == 1)
-				canvas.ellipse(0,0,parent.diameter()/2, parent.diameter()/2);
-			for(int i=0; i<connections.length; i++) {
-				if(connections[i] != null) {
-					canvas.pushMatrix();
-					canvas.rotate(i * PApplet.PI/3f);
-					canvas.strokeWeight(4);
-					canvas.line(0,0, 0, -parent.diameter() * 0.5f);
-					canvas.popMatrix();
-				}
-			}
-		}
-		else {
+
+		if(this.shape != null) {
+			canvas.pushMatrix();
+			canvas.translate(-position.x, -position.y);
 			this.shape.draw(parent.diameter());
+			canvas.popMatrix();
 		}
-		canvas.popStyle();
 	}
 
 	int numberOfConnections() {
