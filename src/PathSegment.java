@@ -23,7 +23,7 @@ public class PathSegment extends Layerable  {
 				canvas.translate(-position.x, -position.y);
 				canvas.rotate(orientation * (float)Math.PI/3);
 				if(reflect) canvas.scale(-1,1);
-				shape.draw(parent.diameter()/(float)Math.sqrt(3));
+				shape.draw(parent.diameter()/(float)Math.sqrt(3)+0.51f);
 			canvas.popMatrix();
 		}
 	}

@@ -1,6 +1,7 @@
 import java.util.ArrayList;
 
 import processing.core.*;
+import processing.video.Movie;
 
 import java.io.File;
 import processing.opengl.*;
@@ -27,21 +28,24 @@ public class LawnmowerGame extends PApplet {
 	GLGraphics renderer;
 	PGraphicsOpenGL pgl;
 
+	Movie moviePlayer;
+
 	int layerIndices[];
 	int topLayer = 0;
 	ArrayList<Layerable>[] layers;
 	static final int GROUND_LAYER = 0;
 	static final int ROAD_LAYER = 1;
-	static final int BUILDING_LAYER = 2;
+	static final int DRIVEWAY_LAYER = 2;
 	static final int PLAYER_LAYER = 3;
-	static final int SKY_LAYER = 4;
+	static final int BUILDING_LAYER = 4;
+	static final int SKY_LAYER = 5;
 
 	int liveRoads = 0;
 
 	public void setup() {
 		//size(480, 320);
-		//size(800,600, GLConstants.GLGRAPHICS);
-		size(1280,800, GLConstants.GLGRAPHICS);
+		size(800,600, GLConstants.GLGRAPHICS);
+		//size(1280,800, GLConstants.GLGRAPHICS);
 		//size(1280,800, OPENGL);
 		//smooth();
 		grid  = new Grid(this, 4);
@@ -76,6 +80,7 @@ public class LawnmowerGame extends PApplet {
 		background(60, 160, 198);
 		this.renderer = (GLGraphics)g;
 		this.gl = renderer.beginGL();
+		gl.setSwapInterval(1);
 
 	    // Begin opengl blending
 
@@ -108,16 +113,20 @@ public class LawnmowerGame extends PApplet {
 
 		grid.draw();
 
+		mowerMan.update();
+		if(!freePan) {
+			grid.centerTarget = mowerMan.position.get();
+			grid.rotationTarget = -mowerMan.angle;
+		}
+		else grid.rotationTarget = 0;
+
 		for(int i=0; i<layers.length; i++) {
+			if(i==PLAYER_LAYER) mowerMan.draw();
 			for(int j=0; j<layers[i].size(); j++) {
 				layers[i].get(j).draw();
 			}
 		}
-		mowerMan.update();
-		if(!freePan)
-			grid.centerTarget = mowerMan.position.get();
-		//grid.rotationTarget = -mowerMan.angle;
-		mowerMan.draw();
+
 
 		//println("Currently at: " + mowerMan.closestCell.getCoordinate().x + ", " + mowerMan.closestCell.getCoordinate().y);
 
@@ -151,6 +160,8 @@ public class LawnmowerGame extends PApplet {
 		}
 		renderer.endGL();
 
+		if()
+
 		for(int i=0; i<layers.length; i++) {
 			this.layers[i].clear();
 		}
@@ -173,7 +184,7 @@ public class LawnmowerGame extends PApplet {
 	}
 
 	public static void main(String args[]) {
-		PApplet.main(new String[] {"--present", "LawnmowerGame" });
+		PApplet.main(new String[] {"LawnmowerGame" });
 	}
 
 	public void keyPressed() {

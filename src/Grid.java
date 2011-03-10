@@ -60,7 +60,7 @@ public class Grid {
 		float rotateDiff = (this.rotationTarget - this.rotation);
 		while(rotateDiff > Math.PI) rotateDiff -= 2*Math.PI;
 		while(rotateDiff < -Math.PI) rotateDiff += 2*Math.PI;
-		float dTheta = rotateDiff * 0.05f;
+		float dTheta = rotateDiff * 0.1f;
 		this.rotation += dTheta;
 
 		PVector tl = screenToMap(new PVector(0,0));
