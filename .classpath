@@ -19,6 +19,11 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="lib" path="lib/GLGraphics.jar"/>
-	<classpathentry kind="lib" path="lib/video.jar"/>
+	<classpathentry kind="lib" path="lib/jmcvideo.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="Lawnmower/libNative"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib/jmc.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

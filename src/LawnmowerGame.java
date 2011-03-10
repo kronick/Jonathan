@@ -1,13 +1,15 @@
 import java.util.ArrayList;
 
 import processing.core.*;
-import processing.video.Movie;
-
-import java.io.File;
 import processing.opengl.*;
+
 import javax.media.opengl.*;
+import java.io.File;
+
 
 import codeanticode.glgraphics.*;
+import jmcvideo.*;
+
 
 public class LawnmowerGame extends PApplet {
 	Grid grid;
@@ -28,7 +30,7 @@ public class LawnmowerGame extends PApplet {
 	GLGraphics renderer;
 	PGraphicsOpenGL pgl;
 
-	Movie moviePlayer;
+	JMCMovieGL moviePlayer;
 
 	int layerIndices[];
 	int topLayer = 0;
@@ -78,6 +80,7 @@ public class LawnmowerGame extends PApplet {
 
 	public void draw() {
 		background(60, 160, 198);
+
 		this.renderer = (GLGraphics)g;
 		this.gl = renderer.beginGL();
 		gl.setSwapInterval(1);
@@ -158,9 +161,16 @@ public class LawnmowerGame extends PApplet {
 		else {
 			roadToFollow = grid.zones.get(0).cells[0][0].getRoad();
 		}
+
+		if(this.moviePlayer != null) {
+			//if(moviePlayer.isReady()) moviePlayer.read();
+			//image(moviePlayer, width/2, height/2, width * 0.75f, height * 0.75f);
+			//image(moviePlayer, width/2, height/2, width, height);
+			moviePlayer.image(gl, width/2-moviePlayer.width/2, height/2-moviePlayer.height/2, moviePlayer.width, moviePlayer.height);
+			if(!moviePlayer.isPlaying()) moviePlayer = null;
+		}
 		renderer.endGL();
 
-		if()
 
 		for(int i=0; i<layers.length; i++) {
 			this.layers[i].clear();
@@ -239,6 +249,10 @@ public class LawnmowerGame extends PApplet {
 					Tipi t = new Tipi(mowerMan.closestCell.getAdjacent(mowerMan.direction), this, mowerMan.direction);
 					//t.parent.addContent(t);
 				}
+				break;
+			case 'v':
+				playMovie();
+				break;
 			}
 		}
 	}
@@ -277,6 +291,12 @@ public class LawnmowerGame extends PApplet {
 			//grid.rotationTarget += (pmouseY - mouseY) * 0.05f;
 	}
 
+	public void playMovie() {
+		if(this.moviePlayer == null) {
+			this.moviePlayer = new JMCMovieGL(this, "videos/deer-in-back-yard.mov", RGB);
+			this.moviePlayer.play();
+		}
+	}
 	Sprite lookupSprite(String filename) {
 		// Find a Sprite object reference by its filename
 		for(int i=0; i<sprites.size(); i++) {

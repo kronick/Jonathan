@@ -34,6 +34,9 @@ public class Mower {
 	public void update() {
 		//canvas.println(getDistanceFromCellCenter() + " < " + (closestCell.diameter()/2));
 		//canvas.println(this.closestCell.getPosition());
+		if(closestCell.parent.hasHouse() && closestCell.getCoordinate().x == 6 && closestCell.getCoordinate().y == 6) {
+			canvas.playMovie();
+		}
 		if(getDistanceFromCellCenter() > closestCell.diameter() * 0.5) {
 			canvas.println("Transitioning");
 			transitionToNextCell();
