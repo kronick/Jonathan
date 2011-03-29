@@ -25,5 +25,10 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="lib" path="lib/jmc.jar"/>
+	<classpathentry kind="lib" path="lib/fullscreen.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="Lawnmower/libNative"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

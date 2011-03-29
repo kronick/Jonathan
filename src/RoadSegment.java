@@ -65,13 +65,21 @@ public class RoadSegment extends Layerable {
 
 			canvas.liveRoads++;
 		}
+		if(age > 5 && grow) {
+			for(int i=0; i<6; i++) {
+				if(canvas.random(1) < 0.1f && parent.getAdjacent(i) != null && ((SuperCell)parent.getAdjacent(i)).isDevelopable()) {
+					House newHouse = new House(((SuperCell)parent.getAdjacent(i)), canvas, this, (i+3)%6);
+					//parent.getAdjacent(i).addContent(newHouse);
+				}
+			}
+		}
 		if(age > 50 && grow) {
 			grow = false;
 			if(numberOfConnections() == 1 || true) {
 				// Plant a subdivision around the cul de sac
 				for(int i=0; i<6; i++) {
 					if(canvas.random(1) < 0.1f && parent.getAdjacent(i) != null && ((SuperCell)parent.getAdjacent(i)).isDevelopable()) {
-						House newHouse = new House(((SuperCell)parent.getAdjacent(i)), canvas, this, (i+3)%6);
+						//House newHouse = new House(((SuperCell)parent.getAdjacent(i)), canvas, this, (i+3)%6);
 						//parent.getAdjacent(i).addContent(newHouse);
 					}
 				}

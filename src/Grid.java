@@ -9,6 +9,7 @@ public class Grid {
 	PVector centerTarget;
 
 	float zoom;
+	float zoomTarget;
 	LawnmowerGame canvas;
 
 	int zoneSize = 5;
@@ -30,6 +31,7 @@ public class Grid {
 		this.canvas = canvas;
 		this.zones = new ArrayList<Zone>();
 		this.zoom = 10f;
+		this.zoomTarget = 10f;
 
 		zones.add(new Zone(canvas, this, zoneSize));
 		zones.add(new Zone(canvas, this, zoneSize));
@@ -63,6 +65,8 @@ public class Grid {
 		float dTheta = rotateDiff * 0.1f;
 		this.rotation += dTheta;
 
+		this.zoom -= (this.zoom-this.zoomTarget) * 0.05f;
+
 		PVector tl = screenToMap(new PVector(0,0));
 		PVector br = screenToMap(new PVector(canvas.width, canvas.height));
 		clipLines[CLIP_LEFT] = tl.x;
@@ -88,6 +92,11 @@ public class Grid {
 		centerZone.drawnThisFrame = false;
 		centerZone.updatedThisFrame = false;
 		centerZone.update();
+	}
+
+	void toggleZoom() {
+		if(this.zoom > 20) this.zoomTarget = 8;
+		if(this.zoom < 20) this.zoomTarget = 40;
 	}
 
 	void beginTransform() {
@@ -176,6 +185,6 @@ public class Grid {
 
   	void setZoom(float level) {
   		if(level > 8 && level < 60)
-  			zoom = level;
+  			zoomTarget = level;
   	}
 }

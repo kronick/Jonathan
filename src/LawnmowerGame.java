@@ -10,7 +10,6 @@ import java.io.File;
 import codeanticode.glgraphics.*;
 import jmcvideo.*;
 
-
 public class LawnmowerGame extends PApplet {
 	Grid grid;
 	ArrayList<Sprite> sprites;
@@ -23,6 +22,9 @@ public class LawnmowerGame extends PApplet {
 	boolean freePan = false;
 
 	PVector mouseDown;
+
+	int tapTime = 0;
+	static final int DOUBLE_TAP_TIME = 20;
 
 	PVector wind;
 
@@ -46,8 +48,8 @@ public class LawnmowerGame extends PApplet {
 
 	public void setup() {
 		//size(480, 320);
-		size(800,600, GLConstants.GLGRAPHICS);
-		//size(1280,800, GLConstants.GLGRAPHICS);
+		//size(800,600, GLConstants.GLGRAPHICS);
+		size(1920,1080, GLConstants.GLGRAPHICS);
 		//size(1280,800, OPENGL);
 		//smooth();
 		grid  = new Grid(this, 4);
@@ -162,10 +164,7 @@ public class LawnmowerGame extends PApplet {
 			roadToFollow = grid.zones.get(0).cells[0][0].getRoad();
 		}
 
-		if(this.moviePlayer != null) {
-			//if(moviePlayer.isReady()) moviePlayer.read();
-			//image(moviePlayer, width/2, height/2, width * 0.75f, height * 0.75f);
-			//image(moviePlayer, width/2, height/2, width, height);
+		if(this.moviePlayer != null && moviePlayer.isPlaying()) {
 			moviePlayer.image(gl, width/2-moviePlayer.width/2, height/2-moviePlayer.height/2, moviePlayer.width, moviePlayer.height);
 			if(!moviePlayer.isPlaying()) moviePlayer = null;
 		}
@@ -191,10 +190,12 @@ public class LawnmowerGame extends PApplet {
 		}
 		this.liveRoads = 0;
 
+		this.tapTime--;
+
 	}
 
 	public static void main(String args[]) {
-		PApplet.main(new String[] {"LawnmowerGame" });
+		PApplet.main(new String[] {"--present", "LawnmowerGame"});
 	}
 
 	public void keyPressed() {
@@ -225,6 +226,7 @@ public class LawnmowerGame extends PApplet {
 				followRoad = !followRoad;
 				break;
 			case 'w':
+			case 'f':
 				freePan = false;
 				mowerMan.setSpeed(0.1f);
 				break;
@@ -242,6 +244,15 @@ public class LawnmowerGame extends PApplet {
 				break;
 			case 'm':
 				mowerMan.toggleMowing();
+				break;
+			case ' ':
+				if(this.moviePlayer != null) {
+					this.moviePlayer.stop();
+					this.moviePlayer.dispose();
+					this.moviePlayer = null;
+				}
+				if(tapTime > 0) grid.toggleZoom();
+				tapTime = DOUBLE_TAP_TIME;
 				break;
 			case 't':
 				println(mowerMan.direction%6);
@@ -293,8 +304,17 @@ public class LawnmowerGame extends PApplet {
 
 	public void playMovie() {
 		if(this.moviePlayer == null) {
-			this.moviePlayer = new JMCMovieGL(this, "videos/deer-in-back-yard.mov", RGB);
-			this.moviePlayer.play();
+			String filename = "";
+			int r = (int)random(0,31);
+			if(r < 10)
+				filename = "videos/0" + r + ".mov";
+			else
+				filename = "videos/" + r + ".mov";
+
+			if(filename != "") {
+				this.moviePlayer = new JMCMovieGL(this, filename, RGB);
+				this.moviePlayer.play();
+			}
 		}
 	}
 	Sprite lookupSprite(String filename) {
